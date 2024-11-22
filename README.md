@@ -42,3 +42,9 @@ With this project, you can:
 3. **PyELFTools** (for parsing ELF binaries):
    ```bash
    pip install pyelftools
+
+
+## Contributing
+Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests to improve the simulator and disassembler.
+
+
