@@ -42,6 +42,6 @@ With this project, you can:
 
 
 ## Contributing
-Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests to improve the simulator and disassembler.
+Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests to improve the simulator and disassembler. Currently trying to implement MMIO, which is a WIP.
 
 
