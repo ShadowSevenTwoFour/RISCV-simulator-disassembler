@@ -8,18 +8,6 @@ class RV64Simulator:
         self.memory = bytearray(mem_size)
         self.mem_size = mem_size
 
-        # MMIO addresses
-        self.mmio_output_addr = 0xFFFF0000
-        self.mmio_input_request_addr = 0xFFFF0002
-        self.mmio_input_addr = 0xFFFF0004
-        self.mmio_status_addr = 0xFFFF0008
-        self.mmio_exit_addr = 0xFFFF0001
-        self.mmio_start = 0xFFFF0000
-
-        # Input handling flags
-        self.mmio_input_ready = False
-        self.mmio_input_value = 0
-
     def load_elf_binary(self, filepath):
         """Load an ELF binary into the simulator's memory."""
         with open(filepath, "rb") as f:
@@ -91,72 +79,18 @@ class RV64Simulator:
             self.registers[rd] = val & 0xFFFFFFFFFFFFFFFF
 
     def memory_read(self, address, size, signed=False):
-        # Handle MMIO input and status
-        if address == self.mmio_input_addr and size == 8:
-            # Reading the input register
-            if self.mmio_input_ready:
-                # Consume the input and mark no longer ready
-                val = self.mmio_input_value
-                self.mmio_input_ready = False
-                if signed:
-                    return self.sign_extend(val, 64)
-                return val
-            else:
-                # No input ready
-                return 0
-        elif address == self.mmio_status_addr and size == 8:
-            # Status register: 1 if input ready, else 0
-            return 1 if self.mmio_input_ready else 0
-
-        # Normal memory read
-        if address >= self.mmio_start:
-            # No other MMIO reads defined
-            return 0
-        else:
-            if address + size > self.mem_size:
-                raise MemoryError(f"Memory read out of range: {address:#x}")
-            data = self.memory[address:address+size]
-            val = int.from_bytes(data, 'little')
-            if signed:
-                return self.sign_extend(val, size*8)
-            return val
+        if address + size > self.mem_size:
+            raise MemoryError(f"Memory read out of range: {address:#x}")
+        data = self.memory[address:address+size]
+        val = int.from_bytes(data, 'little')
+        if signed:
+            return self.sign_extend(val, size*8)
+        return val
 
     def memory_write(self, address, value, size):
-        if address == self.mmio_output_addr and size == 1:
-            # Print a character
-            sys.stdout.write(chr(value & 0xFF))
-            sys.stdout.flush()
-        elif address == self.mmio_input_request_addr and size == 1:
-            # Guest requests input by writing 0x1
-            if value == 0x1:
-                # Prompt user for a line of input
-                user_input = input("Enter a line of input: ")
-                # Store input in buffer at 0x2000 (fixed address)
-                buffer_address = 0x2000
-                data = user_input.encode('ascii')
-                for i, ch in enumerate(data):
-                    if buffer_address + i < self.mem_size:
-                        self.memory[buffer_address + i] = ch
-                    else:
-                        raise MemoryError("Input string buffer out of range")
-                # Add null terminator
-                if buffer_address + len(data) < self.mem_size:
-                    self.memory[buffer_address + len(data)] = 0
-                # Set input ready flag
-                self.mmio_input_ready = True
-        elif address == self.mmio_exit_addr and size == 1:
-            # Guest signals exit by writing 0xFF
-            if value == 0xFF:
-                print("\nProgram exited.")
-                sys.exit(0)
-        else:
-            if address >= self.mmio_start:
-                # Undefined MMIO writes are ignored or can raise an error
-                pass  # You can choose to print a warning or ignore
-            else:
-                if address + size > self.mem_size:
-                    raise MemoryError(f"Memory write out of range: {address:#x}")
-                self.memory[address:address+size] = value.to_bytes(size, 'little')
+        if address + size > self.mem_size:
+            raise MemoryError(f"Memory write out of range: {address:#x}")
+        self.memory[address:address+size] = value.to_bytes(size, 'little')
 
     def execute(self, opcode, rd, funct3, rs1, rs2, funct7, imm_i, imm_s, imm_b, imm_u, imm_j):
         R = self.registers
