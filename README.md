@@ -16,14 +16,11 @@ With this project, you can:
 ### Simulator
 - **RV64I Instruction Set**: Full implementation of the base RV64I instruction set, including arithmetic, memory, branching, and system calls.
 - **ELF Binary Support**: Parses ELF binaries and loads their segments into simulated memory.
-- **MMIO Integration**:
-  - **Keyboard Input Register (0xFFFF0000)**: Simulates reading user input.
-  - **Status Register (0xFFFF0004)**: Tracks input availability for polling.
 - **Trace Mode**: Logs detailed execution information, including fetched instructions, decoded fields, and register states.
 - **Interactive Input**: Simulates user interaction for real-time input processing.
 
 ### Disassembler
-- Converts RISC-V binaries or individual instructions into human-readable assembly.
+- Converts ELF binaries into human-readable assembly.
 - Helps debug and analyze programs without external tools.
 
 ---
@@ -45,6 +42,5 @@ With this project, you can:
 
 
 ## Contributing
-Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests to improve the simulator and disassembler.
-
+Contributions are welcome! Feel free to fork the repository, submit issues, or create pull requests to improve the simulator and disassembler. Currently trying to implement MMIO, which is a WIP.
 
